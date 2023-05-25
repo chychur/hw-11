@@ -1,4 +1,4 @@
-from .new import AddressBook, Record, Name, Phone, Birthday
+from new import AddressBook, Record, Name, Phone, Birthday
 
 USERS = AddressBook()
 
