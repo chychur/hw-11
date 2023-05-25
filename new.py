@@ -35,13 +35,28 @@ class Phone(Field):
 
     def __init__(self, value) -> None:
         super().__init__(value)
-        self.phone_number = ''
+        self.phone_number = []
     
     @Field.value.setter
     def set_value(self, value):
-        if not re.match(r'^\+38\d{10}$', value):
-            raise ValueError("Phone number should be in the format +380XXXXXXXXX")
-        self.phone_number = value
+
+        while True:
+            if value:
+                self.phone_number = value
+            else:
+                try:
+                    for number in self.values.split(' '):
+                        if re.match('^\+48\d{9}$', number) or re.match('^\\+38\d{10}$', number) or number == '':
+                            self.value.append(number)
+                        else:
+                            raise ValueError
+                except ValueError:
+                    print('Incorrect phone number format! Please provide correct phone number format.')
+                else:
+                    break
+
+    def __getitem__(self):
+        return self.value
 
 
 class Birthday(Field):
@@ -50,7 +65,24 @@ class Birthday(Field):
 
     @Field.value.setter
     def value(self, value):
-        self.__value = datetime.strptime(value, '%d%m%Y').date
+
+        while True:
+            if value:
+                self.value = value
+            else:
+                try:
+                    if re.match('^\d{2}/\d{2}/\d{4}$', self.value):
+                        self.__value = datetime.strptime(self.value.strip(), "%d/%m/%Y").date
+                        break
+                    elif self.value == '':
+                        break
+                    else:
+                        raise ValueError
+                except ValueError:
+                    print('Incorrect date! Please provide correct date format.')
+
+    def __getitem__(self):
+        return self.value
 
 class Record:
 
