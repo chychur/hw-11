@@ -10,18 +10,20 @@ class Bot:
         command, *args = user_input.split()
         command = command.lstrip()
 
-        if command.lower() in self.HANDLERS.keys():
-            handler = self.HANDLERS[command.lower()]
-        elif command.lower() in self.adressbook.COMMAND_ADDRESSBOOK.keys():
-            try:
-                handler = self.adressbook.COMMAND_ADDRESSBOOK[command.lower()]
-            except KeyError:
-                if args:
-                    command = command + ' ' + args[0]
-                    args = args[1:]
-                handler = self.adressbook.COMMAND_ADDRESSBOOK.get(
-                    command.lower(), self.unknown_command_handler)
-
+        handler = self.get_bot_handlers().get(command.lower())
+        if handler:
+            return handler,
+        handler = self.get_book_handlers().get(command.lower())
+        # print(handler)
+        if handler is None:
+            if args:
+                command = command + ' ' + args[0]
+                args = args[1:]
+                handler = self.get_book_handlers().get(command.lower())
+                return handler,
+            else:
+                return self.unknown_command_handler, user_input
+        # print(handler)
         try:
             name = args[0]
         except IndexError:
@@ -39,54 +41,49 @@ class Bot:
 
         return handler, name, phone, birthday
 
-    def unknown_command_handler():
-        return "unknown_command"
+    def unknown_command_handler(self, command):
+        return f"{command} not persist"
 
-    def hello_handler():
-        return "How can I help you?"
+    def hello_handler(self):
+        command_bot = '\n'.join(self.get_bot_handlers().keys())
+        command_book = '\n'.join(self.get_book_handlers().keys())
+        message = (
+            f"How can I help you?\n "
+            f"Available command:\n"
+            f"{command_bot}\n"
+            f"{command_book}"
+        )
+        return message
 
-    def exit_handler():
-        return
+    def exit_handler(self):
+        return 'EXIT'
 
-    HANDLERS = {
-        'hello': hello_handler,                   # привітання
-        # 'add': AddressBook.add_record_handler,    # додавання запису
-        # 'change': AddressBook.change_handler,     # зміна телефону
-        # 'show all': AddressBook.show_all_handler,  # показати вміст
-        # 'phone': AddressBook.phone_handler,       # показати телефон
-        'exit': exit_handler,                     # вихід
-        'goodbye': exit_handler,                  # вихід
-        'close': exit_handler                     # вихід
-    }
+    def get_bot_handlers(self):
+        return {
+            'help': self.hello_handler,                     # привітання
+            'exit': self.exit_handler,                      # вихід
+            'goodbye': self.exit_handler,                   # вихід
+            'close': self.exit_handler                      # вихід
+        }
+
+    def get_book_handlers(self):
+        return {
+            'add': self.adressbook.create_and_add_record,   # додавання запису
+            'change': self.adressbook.change_handler,       # зміна телефону
+            'show all': self.adressbook.show_all_handler,   # показати вміст
+            'phone': self.adressbook.phone_handler,         # показати телефон
+        }
 
     def run(self):
         while True:
-            # example: add Petro 0991234567
 
             user_input = input('Please enter command and args: ')
-            handler, name, phone, birthday = self.parse_input(user_input)
-            # print(handler, self.adressbook, name, phone, birthday)
-            # print(handler, self.HANDLERS)
-            if handler in self.HANDLERS.values():
-                result = handler()
-            elif handler in self.adressbook.COMMAND_ADDRESSBOOK.values():
-
-                print(self.adressbook)
-                if name == None:
-                    result = handler(self.adressbook)
-                elif handler == self.adressbook.COMMAND_ADDRESSBOOK['add']:
-                    record = Record(name, phone, birthday=None)
-                    result = handler(self.adressbook, record)
-                    print(result)
-                else:
-                    result = handler(self.adressbook, name, phone)
-            print(self.adressbook)
-            print(result)
-            if not result:
+            handler, *data = self.parse_input(user_input)
+            result = handler(*data)
+            if result == 'EXIT':
                 print('Good bye!')
                 break
-            # record = Record(name, phone, birthday=None)
-            # result = handler(self.adressbook, record)
+            print(result)
 
 
 if __name__ == "__main__":

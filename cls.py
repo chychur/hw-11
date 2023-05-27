@@ -1,4 +1,5 @@
 from collections import UserList
+from abc import ABC, abstractmethod
 from datetime import datetime
 import re
 
@@ -106,8 +107,20 @@ class Record:
             return (self.birthday.value.replace(year=now.year) - now).days
         return (self.birthday.value.replace(year=now.year) + 1).days
 
+    def __getitem__(self, key):
+        result = self.record[key]
+        return result
+
+    def __setitem__(self, key, value):
+        if key in self.record:
+            self.record[key] = value
+
+    def __repr__(self) -> str:
+        # return f'Record (Name:"{self.name}", Phone:"{self.phone}", Birthday:"{self.birthday}")'
+        return '|{!r:<12}|{!r:^15}|{!r:^14}|\n'.format(self.name, self.phone, self.birthday)
+
     def __str__(self) -> str:
-        return f'Record (Name:"{self.name}", Phone:"{self.phone}", Birthday:"{self.birthday}")'
+        return f'Name: {self.name}, Phone:{self.phone or "Empty"}, Birthday:{self.birthday or "Empty"}'
 
 
 class AddressBook(UserList):
@@ -118,49 +131,67 @@ class AddressBook(UserList):
     def __getitem__(self, index):
         return self.data[index]
 
-    def add_record_handler(self, record=Record):
+    def create_and_add_record(self, name, phone, birthday):
+        record = Record(name, phone, birthday)
+        self.add_record_handler(record)
+
+        return f"Added contact {record}"
+
+    def add_record_handler(self, record: Record):
         self.data.append(record)
 
-    def change_handler(self, name, phone):  # зміна телефону
-        name = Name(name)
-        phone = Phone(phone)
-        for record in self.data:
-            old_phone = record['phone']
-            if name.value == record['name']:
-                record['phone'] = phone.set_value
+    def change_handler(self, name, phone, birthday=None):  # зміна телефону
+        for rec in self.data:
+            new_phone = Phone(phone).value
+            if rec['name'] == name:
+                old_rec_phone = rec['phone']
+                rec['phone'] = new_phone
+                print(rec['phone'])
 
-        return f'For user [ {name.value} ] had been changed phone number! \n Old phone number: {old_phone} \n New phone number: {phone.value}'
+        return f'For user [ {name} ] had been changed phone number! \n Old phone number: {old_rec_phone} \n New phone number: {new_phone.value}'
 
-    def phone_handler(self, name, phone):  # показати номер телефону
-        name = Name(name)
-        phone = Phone(phone)
-        for record in self.data:
-            if name.value == record['name']:
-                record['phone'] = phone
+    def phone_handler(self, name, phone=None, birthday=None):  # показати номер телефону
 
-        return f'Phone of {name.value} is: {phone}\n'
+        for rec in self.data:
+            if rec['name'] == name:
+                rec_name = rec['name']
+                rec_phone = rec['phone']
+                return f'Phone of {rec_name} is: {rec_phone}\n'
+            else:
+                return f'There is no this contact: {rec_name}'
 
     def show_all_handler(self):
         result = ''
-        header = '='*34 + '\n' + \
-            '|{:^4}|{:<12}|{:^14}|{:^14}|\n'.format(
-                'No.', 'Name', 'Phone', 'Birthday') + '='*48 + '\n'
-        foter = '='*48 + '\n'
+        header = '='*51 + '\n' + '|{:^5}|{:^12}|{:^15}|{:^14}|\n'.format(
+                 'No.', 'Name', 'Phone', 'Birthday') + '='*51 + '\n'
+        foter = '='*51 + '\n'
         counter = 0
         for record in self.data:
             counter += 1
-            result += '|{:^4}|{:<12}|{:^14}|{:^14}|\n'.format(
-                counter, record['name'], record['value'], record['birthday'])
+            result += '|{:^5}'.format(counter)+repr(record)
         counter = 0
         result_tbl = header + result + foter
         return result_tbl
 
-    COMMAND_ADDRESSBOOK = {
-        'add': add_record_handler,     # додавання запису
-        'change': change_handler,      # зміна телефону
-        'show all': show_all_handler,  # показати вміст
-        'phone': phone_handler,        # показати телефон
-    }
+    def __str__(self):
+        result = []
+        for account in self.data:
+            if account['birthday']:
+                birth = account['birthday'].strftime("%d/%m/%Y")
+            else:
+                birth = ''
+            if account['phones']:
+                new_value = []
+                for phone in account['phones']:
+                    print(phone)
+                    if phone:
+                        new_value.append(phone)
+                phone = ', '.join(new_value)
+            else:
+                phone = ''
+            result.append(
+                "_" * 50 + "\n" + f"Name: {account['name']} \nPhones: {phone} \nBirthday: {birth} \nEmail: {account['email']} \nStatus: {account['status']} \nNote: {account['note']}\n" + "_" * 50 + '\n')
+        return '\n'.join(result)
 
 
 if __name__ == "__main__":
