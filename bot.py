@@ -65,11 +65,11 @@ class Bot:
 
             user_input = input('Please enter command and args: ')
             handler, name, phone, birthday = self.parse_input(user_input)
-            print(handler, self.adressbook, name, phone, birthday)
-            if handler in self.HANDLERS.keys():
+            # print(handler, self.adressbook, name, phone, birthday)
+            # print(handler, self.HANDLERS)
+            if handler in self.HANDLERS.values():
                 result = handler()
-                print(result)
-            elif handler in self.adressbook.COMMAND_ADDRESSBOOK.keys():
+            elif handler in self.adressbook.COMMAND_ADDRESSBOOK.values():
 
                 print(self.adressbook)
                 if name == None:
@@ -80,14 +80,13 @@ class Bot:
                     print(result)
                 else:
                     result = handler(self.adressbook, name, phone)
-                print(result)
-            # if not result:
-            #     print('Good bye!')
-            #     break
+            print(self.adressbook)
+            print(result)
+            if not result:
+                print('Good bye!')
+                break
             # record = Record(name, phone, birthday=None)
             # result = handler(self.adressbook, record)
-
-            print(self.adressbook)
 
 
 if __name__ == "__main__":
