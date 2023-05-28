@@ -100,6 +100,8 @@ class AddressBook(UserList):
 
     def __init__(self) -> None:
         self.data: list[Record] = []
+        self.current_value = 0
+        self.step = 0
 
     def __getitem__(self, index):
         return self.data[index]
@@ -135,6 +137,7 @@ class AddressBook(UserList):
         return f"Phone for user {name} not found"
 
     def show_all_handler(self):
+        self.step = 0
         result = ''
         header = '='*51 + '\n' + \
             '|{:^5}|{:<12}|{:^15}|{:^14}|\n'.format(
@@ -149,16 +152,66 @@ class AddressBook(UserList):
         result_tbl = header + result + foter
         return result_tbl
 
+    def show_n_handler(self, n: int):
+
+        if n > 0:
+            if len(self.data) - self.step >= n:
+
+                result = ''
+                header = '='*51 + '\n' + \
+                    '|{:^5}|{:<12}|{:^15}|{:^14}|\n'.format(
+                        'No.', 'Name', 'Phone', 'Birthday') + '='*51 + '\n'
+                foter = '='*51 + '\n'
+
+                for record in self.data[self.step:self.step+n]:
+                    self.step += 1
+                    result += '|{:^5}|{:<12}|{:^15}|{:^14}|\n'.format(
+                        self.step, record['name'], record['phone'], record['birthday'])
+
+                result_tbl = header + result + foter
+                return result_tbl
+            else:
+                print('oops!')
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+
+        if self.current_value < len(self.data):
+
+            result = f' {self.current_value + 1} | Name: {self.data[self.current_value].name.value}, Phone:{self.data[self.current_value].phone.value}, Birthday: {self.data[self.current_value].birthday or "Empty"}'
+            self.current_value += 1
+            return result
+
+        raise StopIteration
+
 
 if __name__ == "__main__":
     USERS = AddressBook()
-    n = Name('Andy')
-    b = Phone('07098609')
-    record = Record(n, b)
+    n1 = Name('Andy')
+    p1 = Phone('+380674169297')
+    record1 = Record(n1, p1)
 
-    USERS.add_record_handler(record)
+    USERS.add_record_handler(record1)
 
-    # USERS[n.value] = b.value
+    n2 = Name('Alex')
+    p2 = Phone('+380674169223')
+    record2 = Record(n2, p2)
 
-    print(USERS)
+    USERS.add_record_handler(record2)
+
+    n3 = Name('Mike')
+    p3 = Phone('+380674169200')
+    record3 = Record(n3, p3)
+
+    USERS.add_record_handler(record3)
+
+    print(len(USERS))
     print(USERS.show_all_handler())
+
+    print(USERS.show_n_handler(1))
+    print(USERS.show_n_handler(1))
+
+    # for item in USERS:
+    #     print(item)

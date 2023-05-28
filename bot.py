@@ -53,7 +53,8 @@ class Bot:
         return {
             'add': self.adressbook.create_and_add_record,  # додавання запису
             'change': self.adressbook.change_handler,      # зміна телефону
-            'show all': self.adressbook.show_all_handler,  # показати вміст
+            'show': self.adressbook.show_n_handler,        # показати N-кількість записів
+            'show all': self.adressbook.show_all_handler,  # показати всі записи
             'phone': self.adressbook.phone_handler,        # показати телефон
         }
 
@@ -69,10 +70,9 @@ class Bot:
                     print('Good bye!')
                     break
                 print(result)
-            except ValueError:
-                pass
-            except TypeError:
-                return self.unknown_command_handler
+            except (ValueError, IndexError, TypeError) as exp:
+                print(exp)
+                continue
 
 
 if __name__ == "__main__":
