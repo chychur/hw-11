@@ -153,7 +153,7 @@ class AddressBook(UserList):
         return result_tbl
 
     def show_n_handler(self, n: int):
-
+        n = int(n)
         if n > 0:
             if len(self.data) - self.step >= n:
 
@@ -171,7 +171,12 @@ class AddressBook(UserList):
                 result_tbl = header + result + foter
                 return result_tbl
             else:
-                print('oops!')
+                return (
+                    f'Curent AdressBook volume is {len(self.data)} records'
+                    f'Now you are in the end of AdressBook'
+                )
+        else:
+            raise ValueError('Wrong value! the number must be greater than 0')
 
     def __iter__(self):
         return self
