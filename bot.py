@@ -56,6 +56,7 @@ class Bot:
             'show': self.adressbook.show_n_handler,        # показати N-кількість записів
             'show all': self.adressbook.show_all_handler,  # показати всі записи
             'phone': self.adressbook.phone_handler,        # показати телефон
+            'search': self.adressbook.search               # пошук по телефону або імені
         }
 
     def run(self):
